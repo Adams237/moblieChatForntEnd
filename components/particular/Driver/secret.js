@@ -1,0 +1,1 @@
+ export const SECRET_KEY = 'AIzaSyDZxebBPFHMz2tm2DPvCjHQ9Cp3gUxMNTg'
