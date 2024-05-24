@@ -12,14 +12,14 @@ const Map = ({ user, enfants }) => {
   const [prevTime, setPrevTime] = useState(null);
   const [route, setRoute] = useState([]);
   const mapRef = useRef(null);
-  const [distance, setDistance] = useState(0);
+  const [distance, setDistance] = useState(1);
   const [speed, setSpeed] = useState(0); // Nouvel état pour stocker la vitesse
   const [strokeWidth, setstrokeWidth] = useState(4);
   const [strokeColor, setstrokeColor] = useState('red');
-  const [ramassage , setRamassage ] = useState();
-  const [lieudepot , setLieudepot] = useState();
+  const [ramassage, setRamassage] = useState();
+  const [lieudepot, setLieudepot] = useState();
   const driverId = user.id || user._id;
-  
+
 
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const Map = ({ user, enfants }) => {
       setLocation(location2.coords);
     })();
   }, []);
-  // console.log("loccc: ",location)
+  // console.log("loccc: ", location)
   function sendMyPostion(location) {
     const dataRef = ref(db, 'locations/' + driverId);
 
@@ -52,11 +52,13 @@ const Map = ({ user, enfants }) => {
         longitude: location.longitude
       },
       distance: distance,
-      speed: speed // Envoyer la vitesse à Firebase
+      speed: location.speed // Envoyer la vitesse à Firebase
     };
-    console.log('les coordonnées', data);
+    // console.log('les coordonnées', data);
     set(dataRef, data);
   }
+
+  // console.log(enfants[0])
 
   useEffect(() => {
     if (enfants) {
@@ -82,9 +84,9 @@ const Map = ({ user, enfants }) => {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
@@ -116,14 +118,16 @@ const Map = ({ user, enfants }) => {
 
   useEffect(() => {
     if (location !== null) {
-      const coords = [
-        { latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude) },
-        { latitude: parseFloat(ramassage?.latitude), longitude: parseFloat(ramassage?.longitude) },
-        {
-          latitude: parseFloat(lieudepot?.latitude),
-          longitude: parseFloat(lieudepot?.longitude),
-        },
+      let coords = [
+        { latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude) }
       ];
+      enfants.map(item=>{
+        const coordinates = {
+          latitude: parseFloat(item.ramassage[0].latitude),
+          longitude: parseFloat(item.ramassage[0].lontidute)
+        }
+        coords.push(coordinates)
+      })
       setRoute(coords);
       let totalDistance = 0;
       for (let i = 0; i < coords.length - 1; i++) {
@@ -151,8 +155,9 @@ const Map = ({ user, enfants }) => {
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421
       }}
-      ref={mapRef}
-      provider={PROVIDER_GOOGLE}
+        zoomControlEnabled={15}
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
       >
         <Marker
           coordinate={{
@@ -160,29 +165,28 @@ const Map = ({ user, enfants }) => {
             longitude: parseFloat(location.longitude),
           }}
           title='Le chauffeur'
-          pinColor="blue"
-          icon={()=><Ionicons name='home'  size={50} color={'red'}/>}
+          pinColor="red"
+          icon={() => <Ionicons name='home' size={50} color={'red'} />}
           image={require('../../../assets/images/icon-car.png')}
         />
-        <Marker
-          coordinate={{
-          latitude:   parseFloat(ramassage?.latitude),
-            longitude: parseFloat( ramassage?.longitude),
-          }}
-          title='Point de ramassage'
-          pinColor="blue"
-          image={require('../../../assets/images/icon-student.png')}
-        />
-        <Marker
-          coordinate={{
-            latitude: parseFloat(lieudepot?.latitude),
-            longitude: parseFloat(lieudepot?.longitude)
-          }}
-          title='Ecole de Douala'
-          pinColor="blue"
-          image={require('../../../assets/images/icon-school.png')}
-        />
-      {route.length > 0 && <Polyline coordinates={route} strokeWidth={strokeWidth} strokeColor={'red'} />}
+        {
+          enfants.map(item => {
+            return (
+              <Marker
+                coordinate={{
+                  latitude: parseFloat(item.ramassage[0].latitude),
+                  longitude: parseFloat(item.ramassage[0].lontidute),
+                }}
+                title={item.nom}
+                pinColor="red"
+                // icon={() => <Ionicons name='home' size={50} color={'red'} />}
+                image={require('../../../assets/images/icon-student.png')}
+              />
+            )
+          })
+        }
+
+        { <Polyline  geodesic={true} coordinates={route} strokeWidth={4} strokeColor={'red'} />}
       </MapView>
     </View>
   );

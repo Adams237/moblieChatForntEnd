@@ -43,7 +43,8 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.FOREGROUND_SERVICE"
-      ]
+      ],
+      "package": "com.adamsdev237.rideschooldriverapp"
     },
     "web": {
       "favicon": "./assets/images/logo.png"
@@ -51,7 +52,7 @@
     "description": "Application destininée au chauffeur ",
     "extra": {
       "eas": {
-        "projectId": "64c63c53-0795-4ab8-acd1-b31d77ef86ef"
+        "projectId": "e3faa3a7-d359-4c71-85a7-410a8f245890"
       }
     }
   }

@@ -12,7 +12,6 @@ import { Card } from 'react-native-paper';
 import StartScreen from './screens/StartScreen'
 import HomeScreen from './screens/HomeScreen'
 import DetailsScreen from './screens/HomeScreen'
-import SignUpScreen from './screens/SignUpScreen'
 import SignInScreen from './screens/SignInSreen'
 // or any files within the Snack
 import AssetExample from './components/AssetExample';

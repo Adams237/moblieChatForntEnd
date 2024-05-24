@@ -18,26 +18,26 @@ const ChildrenScreen = ({ user }) => {
 
   const driverId = user.id || user._id
 
-
-  useEffect(() => {
-    async function getEnfants() {
-      // console.log(childrenApi+'/'+driverId)
-      try {
-        const response = await axios.get(childrenApi + '/' + driverId)
-        const data = response.data
-        const dataArray = data?.map((child, index) => ({
-          ...child,
-          id: index
-        }))
-        //  console.log(dataArray)
-        setEnfants(dataArray)
-      } catch (error) {
-        console.log(error)
-      }
+  const getEnfants = async ()=>{
+    console.log("ici;a");
+    try {
+      const response = await axios.get(childrenApi + '/' + driverId)
+      const data = response.data
+      // console.log(data[3])
+      // const dataArray = data?.map((child, index) => ({
+      //   ...child,
+      //   id: index
+      // }))
+       console.log(data)
+      setEnfants(data)
+    } catch (error) {
+      console.log(error)
     }
-
+  }
+  useEffect(() => {
+    console.log("icila");
     getEnfants()
-  }, [user])
+  }, [])
   const handleSwitchChange = (id, newValue) => {
     setEnfants((prevEnfants) =>
       prevEnfants.map((enfant) =>
@@ -75,15 +75,15 @@ const ChildrenScreen = ({ user }) => {
           )
         }
         <ScrollView horizontal>
-          {selectedEnfants.map((child,index) => {
+          {selectedEnfants.map((child, index) => {
             return (
               (
                 <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  navigation.navigate('child-details', { child })
+                  key={index}
+                  onPress={() => {
+                    navigation.navigate('child-details', { child })
 
-                }}>
+                  }}>
                   <Image
 
                     key={child?._id}
@@ -106,8 +106,8 @@ const ChildrenScreen = ({ user }) => {
             )
           }
           {enfantsAffiches.map((child) => (
-            <View 
-            key={child._id}>
+            <View
+              key={child._id}>
               <EnfantCard child={child} onSwitchChange={handleSwitchChange} />
               <Divider />
             </View>
@@ -115,7 +115,7 @@ const ChildrenScreen = ({ user }) => {
           <Br size={15} />
         </ScrollView>
         <View style={{ padding: 10 }}>
-        { selectedEnfants?.length>0 &&  <Button title={'Démarrer mon trajet'} style={{ padding: 9 }} onPress={() => {
+          {selectedEnfants?.length > 0 && <Button title={'Démarrer mon trajet'} style={{ padding: 9 }} onPress={() => {
             startTravel()
             navigation.navigate('R2S', { selectedEnfants })
           }}>

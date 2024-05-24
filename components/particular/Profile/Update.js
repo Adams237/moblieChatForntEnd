@@ -1,7 +1,6 @@
 import React, { useState, useContext , useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
-import CountryPicker from 'react-native-country-picker-modal'; // Import de la bibliothèque pour le sélecteur de pays
+import { TextInput, Button } from 'react-native-paper'; // Import de la bibliothèque pour le sélecteur de pays
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyContext from '../../../contextes/appContext';
 import { colors } from '../../../assets/styles/colors';
@@ -89,15 +88,7 @@ const UpDateForm = () => {
 />
       <View style={styles.phoneInputContainer}>
         {/* Sélecteur de pays pour le numéro de téléphone */}
-        <CountryPicker
-          withFilter
-          withCountryNameButton
-          withAlphaFilter
-          withCallingCode
-          onSelect={onSelectCountry}
-          countryCode={countryCode}
-          visible={false} // Vous pouvez définir la visibilité du composant CountryPicker
-        />
+      
         {/* Champ de texte pour le numéro de téléphone */}
         <TextInput
           style={styles.phoneInput}
