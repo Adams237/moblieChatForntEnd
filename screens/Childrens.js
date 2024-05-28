@@ -23,12 +23,6 @@ const ChildrenScreen = ({ user }) => {
     try {
       const response = await axios.get(childrenApi + '/' + driverId)
       const data = response.data
-      // console.log(data[3])
-      // const dataArray = data?.map((child, index) => ({
-      //   ...child,
-      //   id: index
-      // }))
-       console.log(data)
       setEnfants(data)
     } catch (error) {
       console.log(error)

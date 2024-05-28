@@ -1,5 +1,5 @@
-import { EvilIcons, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useEffect, useRef, useState } from "react";
+
+import  React,{  useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 
 
@@ -7,10 +7,10 @@ import { Button, Snackbar, Title } from "react-native-paper";
 import { colors } from "../assets/styles/colors";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-import { onValue, push, ref, set } from "firebase/database";
-import { db } from "../backend/firebaseConfig";
+// import { onValue, push, ref, set } from "firebase/database";
+// import { db } from "../backend/firebaseConfig";
 
-import ParentMap from "../components/particular/Parent/Map";
+// import ParentMap from "../components/particular/Parent/Map";
 import Br from "../components/widgets/br/br";
 import Map from "../components/particular/Parent/Map";
 
@@ -18,7 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 const R2SScreen = ({ user }) => {
   const navigation = useNavigation()
-  const [isMoving, setIsMoving] = useState(false);
+  // const [isMoving, setIsMoving] = useState(false);
   const [visible, setVisible] = useState(false)
   const route = useRoute()
   const { selectedEnfants } = route.params

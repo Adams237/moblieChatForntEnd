@@ -10,12 +10,12 @@ import axios from 'axios';
 import { driverDataApi } from '../utils/api';
 import { login } from '../redurcer/userSlice';
 
-function UserHomeScreen({user}) {
-    const dispatch = useDispatch()
-    // console.log(driverDataApi+'/'+user.id)
-   const driverId = user.id ||user._id
+function UserHomeScreen({ user }) {
+  const dispatch = useDispatch()
+  // console.log(driverDataApi+'/'+user.id)
+  const driverId = user.id || user._id
 
- useEffect(() => {
+  useEffect(() => {
     const getDriver = async () => {
       try {
         const response = await axios.get(`${driverDataApi}/${driverId}`);
@@ -34,32 +34,32 @@ function UserHomeScreen({user}) {
       getDriver();
     }
   }, [driverId, driverDataApi, dispatch]);
-    return (
-        <ScrollView style={{flex: 1}} horizontal={false}>
+  return (
+    <ScrollView style={{ flex: 1 }} horizontal={false}>
 
-        <View style={styles.title}>
-                <Title>
-                Les urgences récentes
-            </Title>
-            </View>
-            <UrgencesComponent user={user}/>
-
-
-             <View style={styles.title}>
-                <Title>
-                Les liens importants
-            </Title>
-            </View>
-          <Links user={user}/>
+      <View style={styles.title}>
+        <Title>
+          Les urgences récentes
+        </Title>
+      </View>
+      <UrgencesComponent user={user} />
 
 
-        </ScrollView>
-    );
+      <View style={styles.title}>
+        <Title>
+          Les liens importants
+        </Title>
+      </View>
+      <Links user={user} />
+
+
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-  title:{
-     padding: 20
+  title: {
+    padding: 20
   }
 });
 export default UserHomeScreen;
