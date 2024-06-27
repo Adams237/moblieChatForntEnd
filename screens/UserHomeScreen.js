@@ -7,17 +7,25 @@ import Links from '../components/particular/Links/Links';
 import DriverRide from '../components/particular/Driver/Driver';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
-import { driverDataApi } from '../utils/api';
+import { driverDataApi, getOneBus } from '../utils/api';
 import { login } from '../redurcer/userSlice';
 
 function UserHomeScreen({ user }) {
   const dispatch = useDispatch()
+  // console.log(user)
   // console.log(driverDataApi+'/'+user.id)
   const driverId = user.id || user._id
 
   useEffect(() => {
     const getDriver = async () => {
       try {
+        if(user.ecole){
+          const {data} = await axios.get(`${getOneBus}/${driverId}`)
+          if(data!==user){
+            dispatch(login(data))
+            return
+          }
+        }
         const response = await axios.get(`${driverDataApi}/${driverId}`);
         const data = response.data;
 

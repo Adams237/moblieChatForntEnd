@@ -1,5 +1,5 @@
 
-import  React,{  useState } from "react";
+import  React,{  useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 
 
@@ -20,15 +20,24 @@ const R2SScreen = ({ user }) => {
   const navigation = useNavigation()
   // const [isMoving, setIsMoving] = useState(false);
   const [visible, setVisible] = useState(false)
+  const [enfants, setEnfants] = useState([])
   const route = useRoute()
-  const { selectedEnfants } = route.params
+  const { childrenSelect } = route.params
+  const updateEnfant = ()=>{
+    setEnfants(childrenSelect)
+  }
+
+  useEffect(()=>{
+    updateEnfant()
+  },[childrenSelect])
   // console.log("user: ",user)
   // console.log("Enfant :",selectedEnfants);
+
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} >
       {
-        selectedEnfants ? (
-          <Map enfants={selectedEnfants} user={user} />
+        enfants ? (
+          <Map enfants={enfants} user={user} />
         ) :
 
           <View style={styles.actionsButtons}>
@@ -38,7 +47,7 @@ const R2SScreen = ({ user }) => {
             </Text>
             <Br size={20} />
             <Button style={styles.signUpBtn} onPress={() => {
-              navigation.navigate('Enfants', { selectedEnfants })
+              navigation.navigate('Enfants', { enfants })
             }}  >
               <Text style={{ color: 'white' }}>
                 Veillez choisir les enfants

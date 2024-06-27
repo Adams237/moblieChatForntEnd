@@ -4,3 +4,7 @@ export const singIn = `${URL}chauffeur/login`
 
 export  const driverDataApi = `${URL}chauffeur/oneChauffeur`
 export const  childrenApi = `${URL}chauffeur/getEnfants`
+//bus
+export const singInBu = `${URL}ecole/loginBus`
+export const getOneBus = `${URL}ecole/getOneBus`
+export const getChildBus = `${URL}ecole/getChildrenOneBus`

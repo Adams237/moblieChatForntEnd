@@ -24,19 +24,16 @@ const getGestureDirection = (route, navigation) => {
   return 'vertical';
 };
 
-const Visitor = () => {
-  const navigationRef = useRef(null);
-     const currentUser = useSelector((state)=> state.currentUser)
+const Visitor = () => {y
 
   const headerStyle = {
     backgroundColor: colors.primary,
   };
-  const headerTintColor = 'white';
 
   useEffect(() => {}, []);
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer >
       <Stack.Navigator
         screenOptions={({ route, navigation }) => ({
           gestureDirection: getGestureDirection(route, navigation),

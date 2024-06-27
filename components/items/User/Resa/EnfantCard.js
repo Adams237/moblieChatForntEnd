@@ -17,7 +17,7 @@ const navigation = useNavigation()
     }}>
           <List.Item
             title={`${child.nom}`}
-            description = {'Ecole de Yaoudé '}
+            description = {child.ecole.nomEcole}
             right={() =>  <Switch
             value={child.isChecked}
             onValueChange={(newValue) => onSwitchChange(child.id, newValue)}

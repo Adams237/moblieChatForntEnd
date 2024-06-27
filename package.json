@@ -37,6 +37,7 @@
     "react-dom": "18.2.0",
     "react-native": "0.74.1",
     "react-native-chart-kit": "*",
+    "react-native-dropdown-select-list": "^2.0.5",
     "react-native-elements": "*",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-google-maps-directions": "^2.1.1",
