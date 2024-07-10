@@ -1,9 +1,13 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, Animated, Easing } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, Animated, Easing, ActivityIndicator } from 'react-native';
 import NotificationItem from '../components/particular/NotificationItem';
 import { enableScreens } from 'react-native-screens';
 import { useFocusEffect } from '@react-navigation/native';
 import RideItem from '../components/particular/RideItem';
+import axios from 'axios';
+import { getRapport } from '../utils/api';
+import Toast from 'react-native-toast-message';
+import { colors } from '../assets/styles/colors';
 
 enableScreens();
 const historyRides = [
@@ -16,8 +20,29 @@ const historyRides = [
 ];
 
 
-const RidesScreen = ({user}) => {
+const RidesScreen = ({ user }) => {
+  console.log(user)
   const positionX = React.useRef(new Animated.Value(1000)).current;
+  const [rapports, setRaports] = useState([])
+  const [isOk, setIsOk] = useState(true)
+
+  const updateRappor = async () => {
+    setIsOk(true)
+    try {
+      const { data } = await axios.get(`${getRapport}/${user._id}`)
+      setRaports(data)
+      setIsOk(false)
+    } catch (error) {
+      console.log(error)
+      Toast.show({
+
+      })
+    }
+  }
+
+  useEffect(() => {
+    updateRappor()
+  }, [])
 
   const config = {
     duration: 500,
@@ -49,13 +74,19 @@ const RidesScreen = ({user}) => {
   );
 
   return (
-    <Animated.View style={[styles.container, style]}>
-      <FlatList
-        data={historyRides}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <RideItem icon={'location'} text={item.text} date={item.date} />}
-      />
-    </Animated.View>
+    <>
+      {
+        isOk ? <ActivityIndicator color={colors.primary} size={79} />:
+        <Animated.View style={[styles.container, style]}>
+          <FlatList
+            data={rapports}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => <RideItem icon={'location'} distance={item.distance} text={item.enfants.length} date={item.date} />}
+          />
+        </Animated.View>
+      }
+    </>
+
   );
 };
 

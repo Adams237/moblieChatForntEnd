@@ -19,9 +19,9 @@ function UserHomeScreen({ user }) {
   useEffect(() => {
     const getDriver = async () => {
       try {
-        if(user.ecole){
-          const {data} = await axios.get(`${getOneBus}/${driverId}`)
-          if(data!==user){
+        if (user.ecole) {
+          const { data } = await axios.get(`${getOneBus}/${driverId}`)
+          if (data !== user) {
             dispatch(login(data))
             return
           }

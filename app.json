@@ -11,11 +11,11 @@
     "name": "ride-school-driver-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/logo.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/lancement.jpg",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [

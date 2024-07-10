@@ -10,6 +10,8 @@ import RidesScreen from '../../../screens/RidesScreen';
 import SendUrgence from '../ModalViews/SendUrgence';
 // import { render } from 'react-dom';
 import Resa from '../ModalViews/Resa';
+import ChildrenScreen from '../../../screens/Childrens';
+import { useNavigation } from '@react-navigation/native';
 
 
 
@@ -20,11 +22,12 @@ function Links({ user }) {
     {
       name: 'La Résa',
       icon: 'person',
-      render: <Resa />
+      render: <ChildrenScreen user={user} />
     },
     {
-      name: 'Contacter Betacar',
-      icon: 'call',
+      name: 'Rapports',
+      icon: 'book',
+      render: <RidesScreen user={user} />
 
     },
 
@@ -53,6 +56,7 @@ function Links({ user }) {
   ]
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [title, setTitle] = useState('')
+  const navigate = useNavigation()
   const [render, setRender] = useState(null)
   const GridElement = ({ title, iconName, render }) => (
     <TouchableOpacity style={styles.gridItem} onPress={() => {

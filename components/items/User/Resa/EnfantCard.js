@@ -22,7 +22,7 @@ const navigation = useNavigation()
             value={child.isChecked}
             onValueChange={(newValue) => onSwitchChange(child.id, newValue)}
           />}
-             left={() =>  <Image source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1lSk9ZYpmspvSKua-n3RJkH7xDv-ySL7xQhhQaqWwiw&s' }} style={{ width: 50, height: 50, borderRadius: 25, margin: 5 }}/>}
+             left={() =>  <Image source={{ uri: `https://r2sbackend-1.onrender.com/${child.photo}` }} style={{ width: 50, height: 50, borderRadius: 25, margin: 5 }}/>}
           />
 
       

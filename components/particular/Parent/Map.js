@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Button } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Button, Image, Platform, PermissionsAndroid } from 'react-native';
+import Geolocation from "react-native-geolocation-service"
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE, Polygon, Polyline } from 'react-native-maps';
-import { Ionicons } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { ref, set } from 'firebase/database';
 import { db } from '../../../backend/firebaseConfig';
 import axios from 'axios';
@@ -10,11 +11,12 @@ import { decode } from '@mapbox/polyline';
 
 
 
-
 const Map = ({ user, enfants }) => {
   const [location, setLocation] = useState(null);
   const [route, setRoute] = useState([]);
-  const [counter, setCounter] = useState(0)
+  const [mapWiewRef, setMapviewRef] = useState(null)
+  const [valu, setVal] = useState(0)
+  const previousLocation = useRef(null)
   const driverId = user.id || user._id;
 
 
@@ -33,6 +35,7 @@ const Map = ({ user, enfants }) => {
   const getDirection = async (startLocaion, destinationLocation) => {
     try {
       const key = "AIzaSyCNJXjPNJI96OQs2Qfin46-Ow7sSeXx8nA"
+
       let resp = await fetch(
         `https://maps.googleapis.com/maps/api/directions/json?origin=${startLocaion}&destination=${destinationLocation}&key=${key}`
       )
@@ -51,44 +54,90 @@ const Map = ({ user, enfants }) => {
     }
   }
   const updatePosition = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      return;
-    }
+
     let location2 = await Location.watchPositionAsync({
-      accuracy: Location.Accuracy.High,
-      timeInterval: 1000
+      accuracy: Location.Accuracy.Highest,
+      timeInterval: 5000,
+      distanceInterval: 5
     },
       async (newPosition) => {
+        handleChangeRegion({
+          latitude: newPosition.coords.latitude,
+          longitude: newPosition.coords.longitude
+        })
         let coords = [
           { latitude: (newPosition.coords.latitude), longitude: (newPosition.coords.longitude), latitudeDelta: 0.0922, longitudeDelta: 0.0421 }
         ]
-        enfants.map(item => {
-          const coordinates = {
-            latitude: (item.ramassage[0].latitude),
-            longitude: (item.ramassage[0].lontidute)
-          }
-          coords.push(coordinates)
-        })
-        let allCoord = []
-        for (i = 0; i < coords.length - 1; i++) {
-          const data = await getDirection(`${coords[i].latitude},${coords[i].longitude}`, `${coords[i + 1].latitude},${coords[i + 1].longitude}`)
-          allCoord = [...allCoord, ...data]
-        }
+        // enfants.map(item => {
+        //   const coordinates = {
+        //     latitude: (item.ramassage[0].latitude),
+        //     longitude: (item.ramassage[0].lontidute)
+        //   }
+        //   coords.push(coordinates)
+        // })
+        const allCoord = await getDirection(`${newPosition.coords.latitude},${newPosition.coords.longitude}`,
+          `${enfants.ramassage[0].latitude},${enfants.ramassage[0].lontidute}`)
 
+        // for (i = 0; i < coords.length - 1; i++) {
+        //   const data = await getDirection(`${coords[i].latitude},${coords[i].longitude}`, `${coords[i + 1].latitude},${coords[i + 1].longitude}`)
+        //   allCoord = [...allCoord, ...data]
+        // }
         setRoute(allCoord)
         sendMyPostion(newPosition.coords);
         setLocation(newPosition.coords);
+        const newVal = valu +1
+        setVal(newVal)
+
       }
     );
-    return ()=>{
-      location2.remove()
-    }
+    return location2
   }
 
+  // useEffect(()=>{
+  //   // console.log("tessssssssst")
+  //   // const requestPositionPermission = async()=>{
+  //   //   if(Platform.OS ==="android" ){
+  //   //     console.log("alllonns")
+  //   //     await PermissionsAndroid.request( PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
+  //   //     console.log("alllllezzzz")
+  //   //   }
+  //   // }
+  //   // console.log("tesssssssssss22222333333")
+  //   // requestPositionPermission()
+  //   Geolocation.watchPosition(
+  //     (position)=>{
+  //       console.log(position.coords)
+  //     },
+  //     (error) =>{
+  //       console.log(error)
+  //     },
+  //     {
+  //       enableHighAccuracy:true,
+  //       maximumAge:10000
+  //     }
+  //   )
+  // },[])
+
   useEffect(() => {
-    updatePosition()
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+      const watchId = await updatePosition()
+
+      return () => {
+        watchId.remove()
+      }
+
+    })()
   }, [enfants]);
+  const handleChangeRegion = (region) => {
+    console.log("test")
+    if (mapWiewRef) {
+      mapWiewRef.animateToRegion(region, 1000)
+    }
+  }
   const localization = [
     {
       latitude: 3.829448,
@@ -139,65 +188,84 @@ const Map = ({ user, enfants }) => {
   // },[])
 
 
+  const goToMyPossition = () => {
+    handleChangeRegion({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      latitudeDelta: 0.0004757,
+      longitudeDelta: 0.0006866
+    })
+  }
+
   if (!location) {
-    console.log("cahrge", location)
     return <Text>Chargement</Text>;
   }
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} initialRegion={{
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421
-      }}
-        // ref={mapRef}
+      {console.log("test")}
+      <MapView style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.0004757,
+          longitudeDelta: 0.0006866
+        }}
         region={{
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitudeDelta: 0.0004757,
+          longitudeDelta: 0.0006866
         }}
-        provider={PROVIDER_GOOGLE}
+        ref={(ref) => setMapviewRef(ref)}
+      // onRegionChange={()=>console.log("test2")}
+
       >
+        <View style={{
+          backgroundColor:"green",
+          height:100,
+          width: 100,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <Marker
+            coordinate={{
+              latitude: parseFloat(location.latitude),
+              longitude: parseFloat(location.longitude),
+            }}
+            title={'Le chauffeur'}
+            pinColor="red"
+          // image={require('../../../assets/images/marqueurbus.webp')}
+          >
+            <Image
+              source={require('../../../assets/images/marqueurbus.webp')}
+              style={{ height: 80, width: 80, resizeMode: 'center', resizeMethod: "resize" }}
+
+            />
+            {/* <AntDesign name="caretup" size={100} color="green" /> */}
+          </Marker>
+        </View>
+
         <Marker
           coordinate={{
-            latitude: parseFloat(location.latitude),
-            longitude: parseFloat(location.longitude),
+            latitude: parseFloat(enfants.ramassage[0].latitude),
+            longitude: parseFloat(enfants.ramassage[0].lontidute),
           }}
-          title={'Le chauffeur'}
+          title={enfants.nom}
           pinColor="red"
-          draggable={true}
-          onDragStart={(e) => {
-            console.log("Drag start", e.nativeEvent.coordinate)
-          }}
-          onDragEnd={(e) => {
-            console.log("Drag end", e.nativeEvent.coordinate)
-          }}
           icon={() => <Ionicons name='home' size={50} color={'red'} />}
-          image={require('../../../assets/images/icon-car.png')}
-        />
-        {
-          enfants.map(item => {
-            return (
-              <Marker
-                key={item._id}
-                coordinate={{
-                  latitude: parseFloat(item.ramassage[0].latitude),
-                  longitude: parseFloat(item.ramassage[0].lontidute),
-                }}
-                title={item.nom}
-                pinColor="red"
-                // icon={() => <Ionicons name='home' size={50} color={'red'} />}
-                image={{uri: item.photo}}
-              />
-            )
-          })
-        }
+        // image={{ uri: `https://r2sbackend-1.onrender.com/${item.photo}` }}
+        >
+          <Image
+            source={{ uri: `https://r2sbackend-1.onrender.com/${enfants.photo}` }}
+            style={{ height: 50, width: 50, resizeMode: 'contain', borderRadius: 50 }}
 
-        <Polyline coordinates={route} strokeColor="blue" strokeWidth={4} />
+          />
+        </Marker>
+
+        <Polyline coordinates={route} strokeColor="black" strokeWidth={10} />
       </MapView>
-      <Button style={styles.button} title='Aller a ma position' onPress={updatePosition} />
+      <Button style={styles.button} title={`Aller a ma position ${valu}` } onPress={goToMyPossition} />
     </View>
   );
 };
@@ -214,6 +282,18 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  marker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
 });
 

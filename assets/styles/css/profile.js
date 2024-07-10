@@ -5,6 +5,7 @@ const profileStyle = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+    marginTop:5
   },
   avatarContainer: {
     justifyContent: 'space-between',
@@ -37,6 +38,9 @@ const profileStyle = StyleSheet.create({
     flex: 1,
     backgroundColor :colors.primary,
     width: 200,
+    height:400,
+    justifyContent:"center",
+    alignItems:"center",
     marginTop: 15
   },
    appBar: {

@@ -1,170 +1,307 @@
 // App.js
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, RefreshControl } from 'react-native';
-import { ActivityIndicator, Divider, Title } from 'react-native-paper';
-import { Button } from 'react-native-elements';
+import { View, ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, RefreshControl, FlatList, Switch, TextInput, ActivityIndicator } from 'react-native';
 import { colors } from '../assets/styles/colors';
-import EnfantCard from '../components/items/User/Resa/EnfantCard';
 import { useNavigation } from '@react-navigation/native';
-import Br from '../components/widgets/br/br';
 import axios from 'axios';
-import { childrenApi, getChildBus } from '../utils/api';
+import { childrenApi, getChildBus, saveRapportDriver } from '../utils/api';
 import { ref, set } from 'firebase/database';
 import { db } from '../backend/firebaseConfig';
 import { Text } from 'react-native';
+import * as Location from 'expo-location'
+import { decode } from '@mapbox/polyline';
+import Toast from 'react-native-toast-message'
+import Geolocation from "react-native-geolocation-service"
 
 const ChildrenScreen = ({ user }) => {
   const [enfants, setEnfants] = useState([]);
+  const [newChildren, setNewChildren] = useState([])
   const [loader, setLoader] = useState(true)
+  const [locationDriver, setLocationDriver] = useState([])
   const [refreshing, setRefreshing] = useState(false);
   const [childrenSelect, setChildrenSelect] = useState([])
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [isSend, setIsSend] = useState(false)
   const navigation = useNavigation()
 
   const driverId = user.id || user._id
 
 
+  function sendMyPostion(location) {
+    const dataRef = ref(db, 'locations/' + driverId);
 
+    const data = {
+      location: {
+        latitude: location.latitude,
+        longitude: location.longitude
+      },
+      speed: location.speed // Envoyer la vitesse à Firebase
+    };
+    set(dataRef, data);
+  }
+
+  const getDirection = async (startLocaion, destinationLocation) => {
+    try {
+      const key = "AIzaSyCNJXjPNJI96OQs2Qfin46-Ow7sSeXx8nA"
+      const {data} = await axios.get(`
+      https://maps.googleapis.com/maps/api/distancematrix/json?origins=${startLocaion}
+      &destinations=${destinationLocation}&units=imperial&key=${key}
+      `)
+      return {
+        distance:data.rows[0].elements[0].distance,
+        duration:data.rows[0].elements[0].duration
+      }
+    } catch (error) {
+      console.log('err', error);
+      return error
+    }
+  }
   const getEnfants = async () => {
     console.log("ici;a");
     setLoader(true)
     setChildrenSelect([])
     try {
-      if(user.ecole){
-        const {data} = await axios.get(`${getChildBus}/${driverId}`)
+      if (user.ecole) {
+        const { data } = await axios.get(`${getChildBus}/${driverId}`)
         setEnfants(data)
-        setLoader(false)
-        return
+        let receivers = data.map((enfant) => (
+          enfant?.parentId
+        ))
+        if (!receivers[0]) {
+          console.log("ici")
+          receivers = data.map(enfant => (
+            enfant.ecole._id
+          ))
+        }
+        const notification = {
+          date: new Date(),
+          body: ' Le chauffeur de votre enfant a commencé un trajet',
+          sender: driverId,
+          receivers: receivers
+        }
+
+        const dataRef = ref(db, 'notifications')
+
+        set(dataRef, notification)
       }
       // console.log(driverId)
       const { data } = await axios.get(`${childrenApi}/${driverId}`)
       setEnfants(data)
+      console.log("getEnfant")
       // console.log(data)
-      setLoader(false)
     } catch (error) {
       console.log(error)
       setLoader(false)
     }
   }
   useEffect(() => {
-    console.log("ici   la");
+
     getEnfants()
-  }, [])
-  const handleSwitchChange = (id) => {
+  }, []);
+  const updateDriverPosition = async () => {
+    let location = await Location.watchPositionAsync({
+      accuracy: Location.Accuracy.Highest,
+      timeInterval: 10000,
+      distanceInterval: 5
+    },
+      async (newLocation) => {
+        setLocationDriver(newLocation.coords)
+        console.log(newLocation.coords)
+        let newEnfants = []
+        sendMyPostion(newLocation.coords)
+        for (let i = 0; i < enfants.length; i++) {
+          const points = await getDirection(`${newLocation.coords.latitude},${newLocation.coords.longitude}`,
+            `${enfants[i].ramassage[0].latitude},${enfants[i].ramassage[0].lontidute}`)
+          console.log(points)
+          enfants[i].distance = points.distance.value / 1000
+          enfants[i].temps = points.duration.text
+          newEnfants.push(enfants[i])
+        }
+        setNewChildren(newEnfants.sort(function (a, b) {
+          if (a.distance < b.distance) return -1
+          if (a.distance > b.distance) return 1
+        }))
+
+
+
+      }
+    )
+    setEnfants(newChildren)
+    setLoader(false)
+    console.log("voici")
+    return location
+  }
+  const handleSwitchChange = (id, value) => {
+    console.log(value)
     let children = childrenSelect
-    const enfant = enfants.find(item=>item._id === id)
+    let myChild = newChildren.filter(item => item._id !== id)
+    let enfant = newChildren.find(item => item._id === id)
+    enfant.isChecked = value
     children.push(enfant)
+    myChild.push(enfant)
     setChildrenSelect(children)
-    const oldChild = enfants.filter(item=> item._id !== id)
-    setEnfants(oldChild)
-    // setEnfants((prevEnfants) =>
-    //   prevEnfants.map((enfant) =>
-    //     enfant.id === id ? { ...enfant, isChecked: newValue } : enfant
-    //   )
-    // );
-  };
-  const startTravel = () => {
-    console.log("oco")
-    let receivers = enfants.map((enfant) => (
-      enfant?.parentId
-    ))
-     if(!receivers[0]){
-      console.log("ici")
-      receivers = enfants.map(enfant=>(
-        enfant.ecole._id
-      ))
-     }
+    setNewChildren(myChild)
+    let receivers = enfant.parentId
+    if (!receivers) receivers = enfant.ecole._id
     const notification = {
       date: new Date(),
-      body: ' Le chauffeur de votre enfant a commencé un trajet',
+      body: "Votre enfant n'a pas été transporté",
       sender: driverId,
       receivers: receivers
     }
-
-    const dataRef = ref(db, 'notifications')
-
+    const dataRef = ref(db, "notifications")
     set(dataRef, notification)
-    navigation.navigate('R2S', { childrenSelect })
+  };
+  const startTravel = async () => {
+    console.log("test")
+    setIsSend(true)
+    let distance=0
+    const date = new Date()
+  
+    let childTransport = []
+    for (let i = 0; i < enfants.length; i++) {
+      if (!enfants[i].isChecked) {
+        childTransport.push(enfants[i])
+        console.log("distance",enfants[i].distance)
+        distance = distance + enfants[i].distance
+      }
+    }
+    try {
+      const { data } = await axios.post(`${saveRapportDriver}/${driverId}`, {
+        enfants: childTransport,
+        date: date,
+        distance: distance
+      })
+      console.log(data)
+      let receivers = childTransport.map((enfant) => (
+        enfant?.parentId
+      ))
+      if (!receivers[0]) {
+        console.log("ici")
+        receivers = childTransport.map(enfant => (
+          enfant.ecole._id
+        ))
+      }
+      const notification = {
+        date: date,
+        body: " Votre enfant a été déposé à l'école ",
+        sender: driverId,
+        receivers: receivers
+      }
+
+      const dataRef = ref(db, 'notifications')
+
+      set(dataRef, notification)
+      setIsSend(false)
+      alert("Mission accomplie Bonne journée!")
+    } catch (error) {
+      // console.log(error.response)
+      Toast.show({
+        type: "error",
+        text1: "une erreur est survenue veillez reessayer"
+      })
+      setIsSend(false)
+    }
+
   }
 
 
   const handleRefresh = () => {
     getEnfants()
+    updateDriverPosition()
     setRefreshing(true)
     setScrollPosition(0)
     setRefreshing(false)
   }
 
-  return (
-    <>
-      {
-        loader ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator color={colors.primary} size={30} />
-        </View> :
-          <View style={{ flex: 1, marginTop: 0 }}>
-            {
-              childrenSelect.length > 0 && (
-                <Title style={{ marginVertical: 38, textAlign: 'center' }}>Enfants à transporter </Title>
 
-              )
-            }
-            <ScrollView horizontal
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                />
-              }
-            >
-              {childrenSelect.map((child, index) => {
-                return (
-                  (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => {
-                        navigation.navigate('child-details', { child })
-
-                      }}>
-                      <Image
-
-                        key={child?._id}
-                        source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1lSk9ZYpmspvSKua-n3RJkH7xDv-ySL7xQhhQaqWwiw&s' }}
-                        style={{ width: 50, height: 50, borderRadius: 25, margin: 5 }}
-                      />
-                      <Text>
-                        {child.nom}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )
-              })}
-            </ScrollView>
-            <ScrollView>
-              {
-                enfants.length > 0 && (
-                  <Title style={{ marginTop: 8, textAlign: 'center' }}>Liste d'enfants</Title>
-
-                )
-              }
-              {enfants.map((child) => (
-                <View
-                  key={child._id}>
-                  <EnfantCard child={child} onSwitchChange={()=>handleSwitchChange(child._id)} />
-                  <Divider />
-                </View>
-              ))}
-              <Br size={15} />
-            </ScrollView>
-            <View style={{ padding: 10 }}>
-              {childrenSelect?.length > 0 && <Button title={'Démarrer mon trajet'} style={{ padding: 9 }} onPress={() => {
-                startTravel()
-              }}>
-
-              </Button>}
-            </View>
-          </View>
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
       }
-    </>
+      const wachtId = await updateDriverPosition()
+
+      return () => {
+        wachtId.remove()
+      }
+    })()
+  }, [enfants])
+
+  const handleSearch = (value) => {
+    if (value) {
+      const children = newChildren.filter(item => item.nom.toLowerCase().includes(value.toLowerCase()))
+      setNewChildren(children)
+      return
+    }
+    setNewChildren(enfants)
+  }
+
+  return (
+    <ScrollView style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      }
+    >
+      <TextInput
+        style={styles.input}
+        placeholder="Rechercher un enfant"
+        onChangeText={text => handleSearch(text)}
+
+      />
+      {
+        (loader || newChildren.length === 0) ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop:100 }}>
+          <ActivityIndicator color={colors.primary} size={100} />
+        </View> :
+          <View style={styles.containerChild}>
+            <Text style={{ fontSize: 20, fontWeight: "bold", color: "blue" }}>Liste des Enfants à porter</Text>
+            <Text style={{ fontSize: 16, color: "gray" }}>(Cocher l'enfant qui n'a pas été porté)</Text>
+
+            <FlatList
+              data={newChildren}
+              keyExtractor={item => item._id}
+              renderItem={({ item }) =>
+                <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("R2S", { item })} >
+                  <TouchableOpacity onPress={() => {
+                    navigation.navigate('child-details', { child: item })
+                  }} >
+                    <Image source={{ uri: `https://r2sbackend-1.onrender.com/${item.photo}` }} style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 50,
+                      marginTop: 10,
+                      marginLeft: 10
+                    }}
+                    />
+                  </TouchableOpacity>
+
+                  <View style={styles.info} >
+                    <Text style={styles.nom}>{item.nom}</Text>
+                    <Text style={styles.ecole}>{item.adresse}</Text>
+                    <Text style={styles.ecole}>{item.ecole.nomEcole}</Text>
+                    <Text style={styles.ecole}>disance :{item.distance} Km</Text>
+                    <Text style={styles.ecole}>Temps :{item.temps}</Text>
+                  </View>
+                  <Switch value={item.isChecked} onValueChange={(value) => handleSwitchChange(item._id, value)} />
+
+                </TouchableOpacity>
+              }
+            />
+            <TouchableOpacity style={styles.button} onPress={startTravel} disabled={isSend}>
+              { isSend? <ActivityIndicator color={colors.primary} size={60} />: <Text style={{ color: "white" }} > Enfant Déposer à l'école </Text>}
+            </TouchableOpacity>
+            <Toast
+              position='top'
+              bottomOffset={20}
+            />
+          </View>
+
+      }
+    </ScrollView>
 
   );
 
@@ -179,13 +316,63 @@ const { height, width } = Dimensions.get('screen')
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white"
   },
   map: {
     height: height * 0.7,
     width: width,
   },
 
+  containerChild: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+    backgroundColor: 'white'
+  },
+  item: {
+    width: width * 0.9,
+    height: 120,
+    backgroundColor: 'lightgray',
+    margin: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  info: {
+    margin: 10
+  },
+  nom: {
+    fontSize: 20,
+    fontWeight: "bold"
+  },
+  button: {
+    marginBottom: 10,
+    backgroundColor: colors.primary,
+    height: 50,
+    borderRadius: 5,
+    width: "80%",
+    justifyContent: "center",
+    alignItems: "center",
 
+  },
+  input: {
+    margin: "auto",
+    marginTop: 30,
+    height: 60,
+    borderWidth: 2,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    width: "80%",
+    marginBottom: 10,
+    borderColor: colors.primary
+  },
   appBarTitle: {
     textAlign: 'center',
 

@@ -1,126 +1,141 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Button, TextInput, Modal, Text, ScrollView, TouchableOpacity , FlatList} from 'react-native';
-import { IconButton, List, Colors, Avatar , Title} from 'react-native-paper';
-import Animated, { Easing } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native'; // Assurez-vous que le nom du package est correct
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, Button, TextInput, Modal, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { IconButton, List, Colors, Avatar, Title } from 'react-native-paper';
 import { colors } from '../../../assets/styles/colors';
 import AppBarr from '../../general/AppBarr';
 import ModalContainer from '../../general/ModalContainer';
 import { push, ref } from 'firebase/database';
 import { db } from '../../../backend/firebaseConfig';
-const SendUrgence = ({user , child}) => {
-   
+const SendUrgence = ({ user, child }) => {
+  console.log(user.enfants)
   const [showModal, setShowModal] = useState(false);
-  const [showModal2, setShowModal2] = useState(true);
-  const [urgence , setUrgence] = useState(null)
-  const possibilities  = [
-    
-     { id: 5, type: 'Retard extrême', date: '24/10/2023' },
+  const [urgence, setUrgence] = useState(null)
+  const possibilities = [
+
+    { id: 5, type: 'Retard extrême', date: '24/10/2023' },
     { id: 6, type: 'Absence du chauffeur', date: '25/10/2023' },
     { id: 7, type: 'Maladie de l\'enfant', date: '23/10/2023' },
     { id: 8, type: 'Retard extrême', date: '24/10/2023' },
     { id: 9, type: 'Absence du chauffeur', date: '25/10/2023' },
-   { id: 9, type: 'Autre cause', date: '25/10/2023' }
+    { id: 10, type: 'Autre cause', date: '25/10/2023' }
 
   ]
 
   const handleContact = (emergency) => {
-   setUrgence(emergency)
+    setUrgence(emergency)
   };
 
 
-   const UrgenceForm = ()=>{
-    
+  const UrgenceForm = () => {
+
     const [emergencyType, setEmergencyType] = useState('');
-  const [urgenceDetails , setUrgenceDetails] = useState('')
-  useEffect(()=>{
-      if (urgence!==null) {
-              setEmergencyType(urgence.type)
+    const [urgenceDetails, setUrgenceDetails] = useState('')
+    useEffect(() => {
+      if (urgence !== null) {
+        setEmergencyType(urgence.type)
 
       }
-    },[])
+    }, [])
     function sendUrgence(params) {
-        //console.log('' , user)
-        const receivers = user.enfants.map((enfant)=>(enfant.parentId))
+      let receivers
+      let urgence
+      if (child) {
+        receivers = user.enfants[0].parentId
+        if (!receivers) {
+          receivers = child.ecole._id
+        }
+        urgence = {
+          type: emergencyType,
+          details: urgenceDetails,
+          sender: user._id || user.id,
+          date: new Date().toISOString(),
+          receivers: receivers
+        }
 
-      const urgence = {
-        type: emergencyType , 
-        details: urgenceDetails,
-        sender: user._id||user.id,
-        date: new Date().toISOString(),
-        receivers: child ? [child.parentId] : receivers
+      }
+      else {
+        receivers = user.enfants.map((enfant) => (enfant.parentId))
+        if (!receivers) {
+          receivers = user.enfants.map(enfant => enfant.ecole)
+        }
+        console.log(receivers)
+        urgence = {
+          type: emergencyType,
+          details: urgenceDetails,
+          sender: user._id || user.id,
+          date: new Date().toISOString(),
+          receivers: receivers
+        }
       }
 
-      const dataRef = ref(db , 'urgences')
 
-      push(dataRef , urgence).then(()=>{
+      const dataRef = ref(db, 'urgences')
+
+      push(dataRef, urgence).then(() => {
         setShowModal(false)
       })
     }
     return (
-    <View style={{flex: 1}}>
-            <TextInput
-           style={styles.input}
-           placeholder="Type d'urgence"
-           value={emergencyType}
-        onChangeText={(text)=>{
-            setEmergencyType(text)
-        }}
-      />
+      <View style={{ flex: 1 }}>
         <TextInput
-         style={[styles.input, { height: 100 }]}
-         placeholder="Détails d'urgence"
-         value={urgenceDetails}
-         onChangeText={(text)=>{
-           setUrgenceDetails(text)
-         }}
-         multiline
-       />
-       <TouchableOpacity onPress={() => sendUrgence()} style={styles.modalButton}>
-         <Text style={styles.buttonText}>Envoyer</Text>
-       </TouchableOpacity>
-    </View>
+          style={styles.input}
+          placeholder="Type d'urgence"
+          value={emergencyType}
+          onChangeText={(text) => {
+            setEmergencyType(text)
+          }}
+        />
+        <TextInput
+          style={[styles.input, { height: 100 }]}
+          placeholder="Détails d'urgence"
+          value={urgenceDetails}
+          onChangeText={(text) => {
+            setUrgenceDetails(text)
+          }}
+          multiline
+        />
+        <TouchableOpacity onPress={() => sendUrgence()} style={styles.modalButton}>
+          <Text style={styles.buttonText}>Envoyer</Text>
+        </TouchableOpacity>
+      </View>
     )
-   }
+  }
 
 
 
   return (
     <ScrollView style={styles.container}>
-               {
-            possibilities.map((item) => {
-              return(
-                <TouchableOpacity onPress={()=>
-                
-                   {
-                   handleContact(item) 
-                   setShowModal(true)
+      {
+        possibilities.map((item) => {
+          return (
+            <TouchableOpacity onPress={() => {
+              handleContact(item)
+              setShowModal(true)
 
-                    }}>
-                  <List.Item
-                  key={item.id.toString()} // Ajout de la clé unique
-                  title={item.type}
-                  right={(props) => (
-                    <IconButton
-                      {...props}
-                      icon="phone"
-                      color={Colors.green500}
-                     
-                    />
-                  )}
-                />
-                </TouchableOpacity>
-              );
-            })
-          }
-       
-           
-        
+            }}>
+              <List.Item
+                key={item.id.toString()} // Ajout de la clé unique
+                title={item.type}
+                right={(props) => (
+                  <IconButton
+                    {...props}
+                    icon="phone"
+                    color={Colors.green500}
+
+                  />
+                )}
+              />
+            </TouchableOpacity>
+          );
+        })
+      }
+
+
+
 
       <Modal visible={showModal} animationType="slide" transparent>
-            <AppBarr title={'Rapporter une urgence'} goBack={()=>{setShowModal(false)}}/>
-           <ModalContainer children={<UrgenceForm />}/>
+        <AppBarr title={'Rapporter une urgence'} goBack={() => { setShowModal(false) }} />
+        <ModalContainer children={<UrgenceForm />} />
       </Modal>
     </ScrollView>
   );
@@ -155,11 +170,11 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-  padding: 10,
-  borderRadius: 10,
-  flex: 1,
+    padding: 10,
+    borderRadius: 10,
+    flex: 1,
   },
-   input: {
+  input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 0.5,

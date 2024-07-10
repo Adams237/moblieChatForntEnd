@@ -22,14 +22,14 @@ const R2SScreen = ({ user }) => {
   const [visible, setVisible] = useState(false)
   const [enfants, setEnfants] = useState([])
   const route = useRoute()
-  const { childrenSelect } = route.params
+  const { item } = route.params
   const updateEnfant = ()=>{
-    setEnfants(childrenSelect)
+    setEnfants(item)
   }
 
   useEffect(()=>{
     updateEnfant()
-  },[childrenSelect])
+  },[item])
   // console.log("user: ",user)
   // console.log("Enfant :",selectedEnfants);
 

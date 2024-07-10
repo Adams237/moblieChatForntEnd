@@ -14,68 +14,69 @@ import ModalContainer from '../../../general/ModalContainer';
 
 
 
-function Links({user , child}) {
- const [isModalVisible , setIsModalVisible ]= useState(false)
-     const [title , setTitle] = useState('')
-     const [render , setRender] = useState(null)
-   const links = [
- 
-    { 
-        name: 'Contacter Betacar', 
-        icon: 'call', 
-
-   }, 
-
-   {
-     name: 'Contacter le parent', 
-     icon: 'call-outline'
-   }, 
-    {
-     name: 'Envoyer une urgence', 
-    icon: 'warning', 
-    render: <SendUrgence user={user} child={child}/>
-   },
-   {
-     name: 'Historique de  deplacements', 
-    icon: 'bus', 
-   },
-  
+function Links({ user, child }) {
+  console.log(child)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [title, setTitle] = useState('')
+  const [render, setRender] = useState(null)
+  const links = [
 
     {
-     name: "Noter l'enfant", 
-    icon: 'star'
-   },
+      name: 'Contacter Betacar',
+      icon: 'call',
+
+    },
+
+    {
+      name: 'Contacter le parent',
+      icon: 'call-outline'
+    },
+    {
+      name: 'Envoyer une urgence',
+      icon: 'warning',
+      render: <SendUrgence user={user} child={child} />
+    },
+    {
+      name: 'Historique de  deplacements',
+      icon: 'bus',
+    },
 
 
-]
-    const GridElement = ({ title, iconName , render }) => (
-  <TouchableOpacity style={styles.gridItem} onPress={()=>{
-     if (render!==undefined) {
+    {
+      name: "Noter l'enfant",
+      icon: 'star'
+    },
+
+
+  ]
+  const GridElement = ({ title, iconName, render }) => (
+    <TouchableOpacity style={styles.gridItem} onPress={() => {
+      if (render !== undefined) {
         setRender(render)
         setTitle(title)
         setIsModalVisible(true)
-     }
-  }}>
-    <Ionicons name={iconName} size={30} color={colors.primary} />
-    <Text style={styles.gridItemText}>{title}</Text>
-  </TouchableOpacity>
-);
+      }
+    }}>
+      <Ionicons name={iconName} size={30} color={colors.primary} />
+      <Text style={styles.gridItemText}>{title}</Text>
+    </TouchableOpacity>
+  );
 
 
-     
-    return (
-      <View>
-            <FlatList
-      data={links}
-      renderItem={({ item }) => (
-        <GridElement title={item.name} iconName={item.icon} render={item.render}/>
-      )}
-      keyExtractor={(item) => item.name.toString()}
-      numColumns={2} // Pour afficher en 2 colonnes, modifiez selon le nombre de colonnes souhaité
-      contentContainerStyle={styles.gridContainer}
-    />
-    
-     <Modal
+
+  return (
+    <View>
+      <FlatList
+        data={links}
+        renderItem={({ item }) => (
+          <GridElement title={item.name} iconName={item.icon} render={item.render} />
+        )}
+        keyExtractor={(item) => item.name.toString()}
+        numColumns={2} // Pour afficher en 2 colonnes, modifiez selon le nombre de colonnes souhaité
+        contentContainerStyle={styles.gridContainer}
+      />
+
+      <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
@@ -83,11 +84,11 @@ function Links({user , child}) {
           setIsModalVisible(false); // Cacher la modale lorsqu'on appuie sur le bouton de fermeture par exemple
         }}
       >
-        <StackAppBarr title={title} goBack={()=>{setIsModalVisible(false)}}/>
-        <ModalContainer children={render}/>
+        <StackAppBarr title={title} goBack={() => { setIsModalVisible(false) }} />
+        <ModalContainer children={render} />
       </Modal>
-      </View>
-    );
+    </View>
+  );
 }
 const styles = StyleSheet.create({
   gridContainer: {

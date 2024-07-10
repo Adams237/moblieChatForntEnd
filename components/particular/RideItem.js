@@ -1,24 +1,27 @@
 
 import * as React from 'react';
-import { View, Text, StyleSheet , Image } from 'react-native';
-import {appData} from '../../data/data'
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const RideItem = ({ text, date  , icon}) => (
+const RideItem = ({ text, date, icon, distance }) => (
   <View style={styles.notificationItem}>
-     <View style={styles.logo}>
-          <Ionicons name={icon} size={24} color="black" />
-     </View>
-    <Text style={styles.notificationText}>{text}</Text>
-    <Text style={styles.dateText}>{date}</Text>
-    
+    <View style={styles.logo}>
+      <Ionicons name={icon} size={24} color="black" />
+    </View>
+    <View style={{ flexDirection:"column" }}>
+      <Text style={styles.notificationText}> Nombre d'enfants Transporter : {text}</Text>
+      <Text style={styles.notificationText}> Distance parcourue : { parseInt(distance)} Km</Text>
+      <Text style={styles.dateText}>{date}</Text>
+    </View>
+
+
   </View>
 );
 
 
 
 const styles = StyleSheet.create({
- 
+
   notificationItem: {
     flexDirection: 'row',
     alignItems: 'center',

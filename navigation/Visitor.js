@@ -24,7 +24,7 @@ const getGestureDirection = (route, navigation) => {
   return 'vertical';
 };
 
-const Visitor = () => {y
+const Visitor = () => {
 
   const headerStyle = {
     backgroundColor: colors.primary,
