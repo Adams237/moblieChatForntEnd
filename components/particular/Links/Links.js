@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useContext, useState } from 'react';
-import { Modal, StyleSheet, View } from 'react-native';
+import { Linking, Modal, StyleSheet, View } from 'react-native';
 import { FlatList } from 'react-native';
 import { Text, TouchableOpacity } from 'react-native';
 import { colors } from '../../../assets/styles/colors';
@@ -20,7 +20,7 @@ function Links({ user }) {
 
   const links = [
     {
-      name: 'La Résa',
+      name: "Liste d'enfants",
       icon: 'person',
       render: <ChildrenScreen user={user} />
     },
@@ -32,7 +32,7 @@ function Links({ user }) {
     },
 
     {
-      name: 'Contacter un parent',
+      name: 'Contacter un Betacar',
       icon: 'call-outline'
     },
     {
@@ -65,6 +65,10 @@ function Links({ user }) {
         setRender(render)
         setTitle(title)
         setIsModalVisible(true)
+        return
+      }
+      if(title === "Contacter un Betacar"){
+        Linking.openURL(`tel:698679885`)
       }
     }}>
       <Ionicons name={iconName} size={30} color={colors.primary} />

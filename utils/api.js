@@ -1,4 +1,5 @@
-const URL = "https://r2sbackend-1.onrender.com/"
+// const URL = "https://r2sbackend-1.onrender.com/"
+const URL = "http://192.168.43.209:5000/"
 
 export const singIn = `${URL}chauffeur/login`
 
@@ -6,6 +7,7 @@ export  const driverDataApi = `${URL}chauffeur/oneChauffeur`
 export const  childrenApi = `${URL}chauffeur/getEnfants`
 export const saveRapportDriver = `${URL}chauffeur/saveRapport`
 export const getRapport = `${URL}chauffeur/getRapport`
+export const updatePassword = `${URL}chauffeur/updatePassword`
 //bus
 export const singInBu = `${URL}ecole/loginBus`
 export const getOneBus = `${URL}ecole/getOneBus`

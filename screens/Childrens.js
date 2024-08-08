@@ -43,13 +43,13 @@ const ChildrenScreen = ({ user }) => {
   const getDirection = async (startLocaion, destinationLocation) => {
     try {
       const key = "AIzaSyCNJXjPNJI96OQs2Qfin46-Ow7sSeXx8nA"
-      const {data} = await axios.get(`
+      const { data } = await axios.get(`
       https://maps.googleapis.com/maps/api/distancematrix/json?origins=${startLocaion}
       &destinations=${destinationLocation}&units=imperial&key=${key}
       `)
       return {
-        distance:data.rows[0].elements[0].distance,
-        duration:data.rows[0].elements[0].duration
+        distance: data.rows[0].elements[0].distance,
+        duration: data.rows[0].elements[0].duration
       }
     } catch (error) {
       console.log('err', error);
@@ -61,8 +61,11 @@ const ChildrenScreen = ({ user }) => {
     setLoader(true)
     setChildrenSelect([])
     try {
+      console.log("user", user.ecole)
       if (user.ecole) {
         const { data } = await axios.get(`${getChildBus}/${driverId}`)
+        console.log(data.length)
+        console.log("la")
         setEnfants(data)
         let receivers = data.map((enfant) => (
           enfant?.parentId
@@ -83,10 +86,33 @@ const ChildrenScreen = ({ user }) => {
         const dataRef = ref(db, 'notifications')
 
         set(dataRef, notification)
+        return
       }
+
       // console.log(driverId)
+
       const { data } = await axios.get(`${childrenApi}/${driverId}`)
+      let receivers = data.map((enfant) => (
+        enfant?.parentId
+      ))
+      if (!receivers[0]) {
+        console.log("ici")
+        receivers = data.map(enfant => (
+          enfant.ecole._id
+        ))
+      }
+      console.log(data.length)
       setEnfants(data)
+      const notification = {
+        date: new Date(),
+        body: ' Le chauffeur de votre enfant a commencé un trajet',
+        sender: driverId,
+        receivers: receivers
+      }
+
+      const dataRef = ref(db, 'notifications')
+
+      set(dataRef, notification)
       console.log("getEnfant")
       // console.log(data)
     } catch (error) {
@@ -99,37 +125,48 @@ const ChildrenScreen = ({ user }) => {
     getEnfants()
   }, []);
   const updateDriverPosition = async () => {
-    let location = await Location.watchPositionAsync({
-      accuracy: Location.Accuracy.Highest,
-      timeInterval: 10000,
-      distanceInterval: 5
-    },
-      async (newLocation) => {
-        setLocationDriver(newLocation.coords)
-        console.log(newLocation.coords)
-        let newEnfants = []
-        sendMyPostion(newLocation.coords)
-        for (let i = 0; i < enfants.length; i++) {
-          const points = await getDirection(`${newLocation.coords.latitude},${newLocation.coords.longitude}`,
-            `${enfants[i].ramassage[0].latitude},${enfants[i].ramassage[0].lontidute}`)
-          console.log(points)
-          enfants[i].distance = points.distance.value / 1000
-          enfants[i].temps = points.duration.text
-          newEnfants.push(enfants[i])
+    console.log("modif")
+    if (enfants.length) {
+      console.log("enfant location")
+      let location = await Location.watchPositionAsync({
+        accuracy: Location.Accuracy.Highest,
+        timeInterval: 10000,
+        distanceInterval: 5
+      },
+        async (newLocation) => {
+          setLocationDriver(newLocation.coords)
+          console.log("child",newLocation.coords)
+          let newEnfants = []
+          sendMyPostion(newLocation.coords)
+          for (let i = 0; i < enfants.length; i++) {
+            const points = await getDirection(`${newLocation.coords.latitude},${newLocation.coords.longitude}`,
+              `${enfants[i].ramassage[0].latitude},${enfants[i].ramassage[0].lontidute}`)
+            console.log("point child",points)
+            enfants[i].distance = points.distance.value / 1000
+            enfants[i].temps = points.duration.text
+            newEnfants.push(enfants[i])
+          }
+          console.log("new enfant",newEnfants.length)
+          setNewChildren(newEnfants.sort(function (a, b) {
+            if (a.distance < b.distance) return -1
+            if (a.distance > b.distance) return 1
+          }))
+
+        
+            setLoader(false)
+
+
         }
-        setNewChildren(newEnfants.sort(function (a, b) {
-          if (a.distance < b.distance) return -1
-          if (a.distance > b.distance) return 1
-        }))
+        
+      )
+      setEnfants(newChildren)
+      console.log("taille de children",newChildren.length)
+    
+      console.log("voici")
+      return location
+    }
 
 
-
-      }
-    )
-    setEnfants(newChildren)
-    setLoader(false)
-    console.log("voici")
-    return location
   }
   const handleSwitchChange = (id, value) => {
     console.log(value)
@@ -153,26 +190,26 @@ const ChildrenScreen = ({ user }) => {
     set(dataRef, notification)
   };
   const startTravel = async () => {
-    console.log("test")
     setIsSend(true)
-    let distance=0
-    const date = new Date()
-  
+    let distance = 0
+    console.log("rapport")
+
     let childTransport = []
-    for (let i = 0; i < enfants.length; i++) {
-      if (!enfants[i].isChecked) {
-        childTransport.push(enfants[i])
-        console.log("distance",enfants[i].distance)
-        distance = distance + enfants[i].distance
+    for (let i = 0; i < newChildren.length; i++) {
+      if (!newChildren[i].isChecked) {
+        childTransport.push(newChildren[i])
+        distance = distance + newChildren[i].distance
       }
     }
+    console.log(childTransport)
     try {
-      const { data } = await axios.post(`${saveRapportDriver}/${driverId}`, {
+      console.log("try")
+      // console.log(enfants[0].ecole._id)
+      await axios.post(`${saveRapportDriver}/${driverId}`, {
         enfants: childTransport,
-        date: date,
+        ecole: childTransport[0].ecole._id,
         distance: distance
       })
-      console.log(data)
       let receivers = childTransport.map((enfant) => (
         enfant?.parentId
       ))
@@ -183,7 +220,7 @@ const ChildrenScreen = ({ user }) => {
         ))
       }
       const notification = {
-        date: date,
+        date: new Date(),
         body: " Votre enfant a été déposé à l'école ",
         sender: driverId,
         receivers: receivers
@@ -195,7 +232,8 @@ const ChildrenScreen = ({ user }) => {
       setIsSend(false)
       alert("Mission accomplie Bonne journée!")
     } catch (error) {
-      // console.log(error.response)
+      console.log(error)
+      // console.log(error.response.data.message)
       Toast.show({
         type: "error",
         text1: "une erreur est survenue veillez reessayer"
@@ -227,7 +265,7 @@ const ChildrenScreen = ({ user }) => {
         wachtId.remove()
       }
     })()
-  }, [enfants])
+  }, [enfants, newChildren])
 
   const handleSearch = (value) => {
     if (value) {
@@ -254,7 +292,7 @@ const ChildrenScreen = ({ user }) => {
 
       />
       {
-        (loader || newChildren.length === 0) ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop:100 }}>
+        (loader) ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
           <ActivityIndicator color={colors.primary} size={100} />
         </View> :
           <View style={styles.containerChild}>
@@ -266,10 +304,11 @@ const ChildrenScreen = ({ user }) => {
               keyExtractor={item => item._id}
               renderItem={({ item }) =>
                 <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("R2S", { item })} >
+                  {  }
                   <TouchableOpacity onPress={() => {
                     navigation.navigate('child-details', { child: item })
                   }} >
-                    <Image source={{ uri: `https://r2sbackend-1.onrender.com/${item.photo}` }} style={{
+                    <Image source={{ uri: item.photo.includes("upload")? `https://r2sbackend-1.onrender.com/${item.photo} `:item.photo }} style={{
                       width: 80,
                       height: 80,
                       borderRadius: 50,
@@ -292,7 +331,7 @@ const ChildrenScreen = ({ user }) => {
               }
             />
             <TouchableOpacity style={styles.button} onPress={startTravel} disabled={isSend}>
-              { isSend? <ActivityIndicator color={colors.primary} size={60} />: <Text style={{ color: "white" }} > Enfant Déposer à l'école </Text>}
+              {isSend ? <ActivityIndicator color="white" size={40} /> : <Text style={{ color: "white" }} > Enfants Déposés à l'école </Text>}
             </TouchableOpacity>
             <Toast
               position='top'

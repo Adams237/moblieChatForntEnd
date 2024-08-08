@@ -9,7 +9,7 @@ const RideItem = ({ text, date, icon, distance }) => (
       <Ionicons name={icon} size={24} color="black" />
     </View>
     <View style={{ flexDirection:"column" }}>
-      <Text style={styles.notificationText}> Nombre d'enfants Transporter : {text}</Text>
+      <Text style={styles.notificationText}> Nombre d'enfants Transportés : {text}</Text>
       <Text style={styles.notificationText}> Distance parcourue : { parseInt(distance)} Km</Text>
       <Text style={styles.dateText}>{date}</Text>
     </View>

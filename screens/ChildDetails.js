@@ -18,6 +18,7 @@ function ChildDetails({ user }) {
   const route = useRoute()
   const [isModalVisible, setIsModalVisible] = useState(false)
   const { child } = route.params
+  console.log(child.parentId)
   const navigation = useNavigation()
   // console.log('parent de enfant' , child)
   const call = (tel) => {
@@ -33,7 +34,7 @@ function ChildDetails({ user }) {
       <View style={profileStyle.avatarContainer}>
         <Br size={20} />
         <Avatar.Image
-          source={{ uri: `https://r2sbackend-1.onrender.com/${child.photo}` }}
+          source={{ uri:  child.photo.includes("upload")? `https://r2sbackend-1.onrender.com/${child.photo} `:child.photo  }}
           size={100}
         />
         <View style={profileStyle.nameContainer}>
@@ -42,6 +43,9 @@ function ChildDetails({ user }) {
           </Text>
           <Text >
             {'' + child.ecole.nomEcole + '  '}
+          </Text>
+          <Text >
+            {'' + child.localisation + '  '}
           </Text>
         </View>
       </View>
@@ -54,7 +58,7 @@ function ChildDetails({ user }) {
         </View>
         <View style={styles.gridItem}>
           <TouchableOpacity onPress={() => {
-            if (!child.parent) {
+            if (!child.parentId) {
               Toast.show({
                 type: 'error',
                 position: 'top',
@@ -64,7 +68,7 @@ function ChildDetails({ user }) {
               })
               return
             }
-            call(child.parent.phone)
+            call(child.parentId.phone)
           }} style={styles.gridButtom}>
             <Text style={styles.gridText} >Contacter Parent</Text>
             <Ionicons name="call" size={30} color={colors.primary} />
@@ -73,7 +77,7 @@ function ChildDetails({ user }) {
       </View>
       <View style={styles.gridContainer}>
         <View style={styles.gridItem}>
-          <TouchableOpacity style={styles.gridButtom} onPress={()=>call(98679885)}>
+          <TouchableOpacity style={styles.gridButtom} onPress={()=>call(698679885)}>
             <Text style={styles.gridText}>Contacter Betacar</Text>
             <Ionicons name="call" size={30} color={colors.primary} />
           </TouchableOpacity>

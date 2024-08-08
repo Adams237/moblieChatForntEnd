@@ -65,23 +65,12 @@ const Map = ({ user, enfants }) => {
           latitude: newPosition.coords.latitude,
           longitude: newPosition.coords.longitude
         })
-        let coords = [
-          { latitude: (newPosition.coords.latitude), longitude: (newPosition.coords.longitude), latitudeDelta: 0.0922, longitudeDelta: 0.0421 }
-        ]
-        // enfants.map(item => {
-        //   const coordinates = {
-        //     latitude: (item.ramassage[0].latitude),
-        //     longitude: (item.ramassage[0].lontidute)
-        //   }
-        //   coords.push(coordinates)
-        // })
+       
+        
         const allCoord = await getDirection(`${newPosition.coords.latitude},${newPosition.coords.longitude}`,
           `${enfants.ramassage[0].latitude},${enfants.ramassage[0].lontidute}`)
 
-        // for (i = 0; i < coords.length - 1; i++) {
-        //   const data = await getDirection(`${coords[i].latitude},${coords[i].longitude}`, `${coords[i + 1].latitude},${coords[i + 1].longitude}`)
-        //   allCoord = [...allCoord, ...data]
-        // }
+      
         setRoute(allCoord)
         sendMyPostion(newPosition.coords);
         setLocation(newPosition.coords);
@@ -164,28 +153,7 @@ const Map = ({ user, enfants }) => {
       longitudeDelta: 0.0421
     }
   ]
-  // useEffect(()=>{
-  //   const timer = setInterval(async ()=>{
-  //     try {
-
-  //       // let {status} = await Location.requestForegroundPermissionsAsync()
-  //       // if (status!== 'granted') {
-  //       //   console.error('Permission to access location was denied');
-  //       //   return;
-  //       // }
-  //       let location2 = await Location.getLastKnownPositionAsync({})
-  //       sendMyPostion(location2.coords)
-
-
-  //       setLocation(location2.coords)
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   },5000)
-  //   return ()=>{
-  //     clearInterval(timer)
-  //   }
-  // },[])
+  
 
 
   const goToMyPossition = () => {

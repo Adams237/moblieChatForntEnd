@@ -31,30 +31,40 @@ function PersonalInfos({ user }) {
       <List.Section>
        
         <List.Item
-          title="Nom de l'entreprise liée"
-          description={'M'}
-          left={() => <List.Icon icon="domain" />}
+          title="Nom et Prenom"
+          description={user.nom}
+          left={() => <List.Icon icon="account" />}
         />
          <List.Item
+          title="Numéro de téléphone"
+          description={ user.phone}
+          left={() => <List.Icon icon="phone" />}
+        />
+        <List.Item
           title="Numéro d'immatriculation"
-          description={ '25411055'}
+          description={user.imatriculation}
           left={() => <List.Icon icon="truck" />}
-        />
-        <List.Item
-          title="Nom d'utilisateur"
-          description={'Amara'}
-          left={() => <List.Icon icon="account" />}
-        />
-        <List.Item
-          title="Nom et Prénoms"
-          description={' Gaston MAKOBA'}
-          left={() => <List.Icon icon="account" />}
         />
         <Divider />
         <List.Item
           title="Numéro de téléphone"
           description={'+237 99234447'}
           left={() => <List.Icon icon="phone" />}
+        />
+        <List.Item
+          title="Ville"
+          description={user.ville}
+          left={() => <List.Icon icon="city" />}
+        />
+        <List.Item
+          title="Quartier"
+          description={user.quartier}
+          left={() => <List.Icon icon="city" />}
+        />
+        <List.Item
+          title="Marque de voiture"
+          description={user.marque}
+          left={() => <List.Icon icon="car" />}
         />
       </List.Section>
     </ScrollView>

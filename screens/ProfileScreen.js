@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../redurcer/userSlice';
 
 const Profile = ({ user }) => {
+  console.log(user.photo)
   let renders
   const [title, setTitle] = useState('')
   const [render, setRender] = useState()
@@ -31,7 +32,7 @@ const Profile = ({ user }) => {
   renders = [
     {
       title: 'Informations personnelles',
-      render: <PersonalInfos />,
+      render: <PersonalInfos user={user} />,
       route: 'personInfo'
     },
     {
@@ -39,13 +40,13 @@ const Profile = ({ user }) => {
       render: <UpDateForm />,
       route: 'update'
     },
+    // {
+    //   title: 'Langue',
+    //   render: <UpDateForm />,
+    //   route: 'langue'
+    // },
     {
-      title: 'Langue',
-      render: <UpDateForm />,
-      route: 'langue'
-    },
-    {
-      title: 'Sécurité',
+      title: 'Modifier',
       render: <UpDateForm />,
       route: 'security'
     },
@@ -100,9 +101,6 @@ const Profile = ({ user }) => {
 
 
   const handleSubmit = () => {
-    // Soumettre le formulaire de modification
-    // console.log('Nouveau numéro de téléphone :', newPhoneNumber);
-    // setIsModalVisible(false); // Cacher la modale après la soumission du formulaire
     dispatch(logout())
     
   };
@@ -114,7 +112,7 @@ const Profile = ({ user }) => {
       <View style={profileStyle.avatarContainer}>
         {/* Icône pour changer le thème */}
         <Image
-          source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvbqAEwufq2re6sbVsnQL4I362_xBU0xze1OjLhQqV7A&s' }}
+          source={{ uri: `https://r2sbackend-1.onrender.com/${user.photo}` }}
           size={100}
           style={styles.driverProfil}
 
@@ -146,18 +144,18 @@ const Profile = ({ user }) => {
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handlePress('security')}>
           <List.Item
-            title="Sécurité"
+            title="Modifier mon mot de passe"
             left={() => <List.Icon icon="lock" />}
           />
         </TouchableOpacity>
         <Divider />
-        <TouchableOpacity onPress={() => handlePress('langue')}>
+        {/* <TouchableOpacity onPress={() => handlePress('langue')}>
           <List.Item
             title="Langue"
             left={() => <List.Icon icon="earth" />}
 
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Divider />
         <TouchableOpacity onPress={() => handlePress('contracts')}>
           <List.Item
