@@ -120,12 +120,15 @@ const ChildrenScreen = ({ user }) => {
       setLoader(false)
     }
   }
-  useEffect(() => {
+  // useEffect(() => {
 
-    getEnfants()
-  }, []);
+  //   getEnfants()
+  // }, []);
   const updateDriverPosition = async () => {
-    console.log("modif")
+    if(enfants.length===0){
+      console.log("taille de lenfants dans le if ", enfants.length)
+      getEnfants()
+    }
     if (enfants.length) {
       console.log("enfant location")
       let location = await Location.watchPositionAsync({
@@ -254,18 +257,19 @@ const ChildrenScreen = ({ user }) => {
 
 
   useEffect(() => {
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         return;
       }
       const wachtId = await updateDriverPosition()
-
+      console.log("useEffect")
       return () => {
         wachtId.remove()
       }
     })()
-  }, [enfants, newChildren])
+  }, [enfants.length])
 
   const handleSearch = (value) => {
     if (value) {

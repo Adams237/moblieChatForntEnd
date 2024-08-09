@@ -17,6 +17,7 @@ import { StyleSheet } from 'react-native';
 import { Image } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redurcer/userSlice';
+import UpdateProfil from '../components/particular/Profile/UpdateProfil';
 
 const Profile = ({ user }) => {
   console.log(user.photo)
@@ -57,7 +58,7 @@ const Profile = ({ user }) => {
     },
     {
       title: 'Confidentialité',
-      render: <UpDateForm />,
+      render: <UpdateProfil />,
       route: 'confidentiality'
     },
     {
@@ -90,7 +91,7 @@ const Profile = ({ user }) => {
   const handlePress = (item) => {
 
     setIsModalVisible(true); // Afficher la modale lorsque l'utilisateur appuie sur "Modifier"
-    renders.map((render, index) => {
+    renders.map((render) => {
       if (item === render.route) {
         setRender(render.render)
         setTitle(render.title)
@@ -186,7 +187,7 @@ const Profile = ({ user }) => {
           />
         </TouchableOpacity>
         <Divider />
-        <TouchableOpacity onPress={() => handlePress('Confidentialité')}>
+        <TouchableOpacity onPress={() => handlePress('confidentiality')}>
           <List.Item
             title="Confidentialité"
             left={() => <List.Icon icon="lock" />}
