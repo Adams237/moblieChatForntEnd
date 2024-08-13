@@ -4,7 +4,7 @@ import { View, ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, Refr
 import { colors } from '../assets/styles/colors';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import { childrenApi, getChildBus, saveRapportDriver } from '../utils/api';
+import { childrenApi, getChildBus, saveRapport, saveRapportDriver } from '../utils/api';
 import { ref, set } from 'firebase/database';
 import { db } from '../backend/firebaseConfig';
 import { Text } from 'react-native';
@@ -206,13 +206,23 @@ const ChildrenScreen = ({ user }) => {
     }
     console.log(childTransport)
     try {
-      console.log("try")
+      console.log("try", user.ecole)
       // console.log(enfants[0].ecole._id)
-      await axios.post(`${saveRapportDriver}/${driverId}`, {
-        enfants: childTransport,
-        ecole: childTransport[0].ecole._id,
-        distance: distance
-      })
+      if(user.ecole){
+        await axios.post(`${saveRapport}/${driverId}`, {
+          enfants: childTransport,
+          ecole: childTransport[0].ecole._id,
+          distance: distance
+        })
+      }
+      else{
+        await axios.post(`${saveRapportDriver}/${driverId}`, {
+          enfants: childTransport,
+          ecole: childTransport[0].ecole._id,
+          distance: distance
+        })
+      }
+     
       let receivers = childTransport.map((enfant) => (
         enfant?.parentId
       ))
